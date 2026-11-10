@@ -1,0 +1,26 @@
+name: Build Duolingo No Haptics
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile dylib
+        run: |
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          clang -dynamiclib -arch arm64 -isysroot "$SDK" \
+            -miphoneos-version-min=15.0 -fobjc-arc -fmodules \
+            -framework Foundation -framework UIKit \
+            -install_name @rpath/DuoNoHaptics.dylib \
+            DuoNoHaptics.m -o DuoNoHaptics.dylib
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: DuoNoHaptics
+          path: DuoNoHaptics.dylib
